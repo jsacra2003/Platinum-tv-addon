@@ -34,6 +34,10 @@ msgctxt "#30007"
 msgid "Max search results"
 msgstr ""
 
+msgctxt "#30008"
+msgid "Recently Added count"
+msgstr ""
+
 msgctxt "#30010"
 msgid "Movies"
 msgstr ""
@@ -80,4 +84,16 @@ msgstr ""
 
 msgctxt "#30021"
 msgid "Season %s"
+msgstr ""
+
+msgctxt "#30022"
+msgid "Genres"
+msgstr ""
+
+msgctxt "#30023"
+msgid "Recently Added"
+msgstr ""
+
+msgctxt "#30024"
+msgid "By Category"
 msgstr ""

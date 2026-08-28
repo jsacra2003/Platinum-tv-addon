@@ -94,6 +94,32 @@ def fanart_for(entry):
     return poster_for(entry)
 
 
+def split_genres(genre_csv):
+    return [g.strip() for g in (genre_csv or "").split(",") if g.strip()]
+
+
+def all_genre_names(items):
+    seen = {}
+    for item in items or []:
+        for g in split_genres(item.get("genre")):
+            seen.setdefault(g.casefold(), g)
+    return sorted(seen.values(), key=lambda x: x.casefold())
+
+
+def items_in_genre(items, genre_name):
+    key = genre_name.casefold()
+    return [item for item in items or [] if key in {g.casefold() for g in split_genres(item.get("genre"))}]
+
+
+def recently_added(items, limit):
+    def added_ts(item):
+        try:
+            return int(item.get("added") or 0)
+        except (TypeError, ValueError):
+            return 0
+    return sorted(items or [], key=added_ts, reverse=True)[:limit]
+
+
 # -- directory renderers -------------------------------------------------
 
 
@@ -120,7 +146,32 @@ def list_categories(categories, action):
     xbmcplugin.endOfDirectory(ADDON_HANDLE)
 
 
-def list_movies(client, movies):
+def list_genre_folders(genre_names, action):
+    for name in genre_names:
+        li = xbmcgui.ListItem(label=name)
+        li.setArt({"icon": "DefaultGenre.png", "thumb": "DefaultGenre.png"})
+        url = build_url(action=action, genre=name)
+        xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, li, isFolder=True)
+    xbmcplugin.addSortMethod(ADDON_HANDLE, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
+    xbmcplugin.endOfDirectory(ADDON_HANDLE)
+
+
+def list_hub(kind):
+    # kind is "movies" or "series"
+    recent_icon = "DefaultRecentlyAddedMovies.png" if kind == "movies" else "DefaultRecentlyAddedEpisodes.png"
+    items = [
+        (L(30022), build_url(action="%s_genres" % kind), "DefaultGenre.png"),
+        (L(30023), build_url(action="%s_recent" % kind), recent_icon),
+        (L(30024), build_url(action="%s_by_category" % kind), "DefaultFolder.png"),
+    ]
+    for label, url, icon in items:
+        li = xbmcgui.ListItem(label=label)
+        li.setArt({"icon": icon, "thumb": icon})
+        xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, li, isFolder=True)
+    xbmcplugin.endOfDirectory(ADDON_HANDLE)
+
+
+def list_movies(client, movies, preserve_order=False):
     xbmcplugin.setContent(ADDON_HANDLE, "movies")
     for m in movies or []:
         name = m.get("name") or m.get("title") or "?"
@@ -130,11 +181,14 @@ def list_movies(client, movies):
         li.setProperty("IsPlayable", "true")
         url = client.stream_url("movie", m.get("stream_id"), m.get("container_extension") or "mp4")
         xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, li, isFolder=False)
-    xbmcplugin.addSortMethod(ADDON_HANDLE, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
+    if preserve_order:
+        xbmcplugin.addSortMethod(ADDON_HANDLE, xbmcplugin.SORT_METHOD_UNSORTED)
+    else:
+        xbmcplugin.addSortMethod(ADDON_HANDLE, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
     xbmcplugin.endOfDirectory(ADDON_HANDLE)
 
 
-def list_series(series_list):
+def list_series(series_list, preserve_order=False):
     xbmcplugin.setContent(ADDON_HANDLE, "tvshows")
     for s in series_list or []:
         name = s.get("name") or s.get("title") or "?"
@@ -143,7 +197,10 @@ def list_series(series_list):
         apply_common_info(li.getVideoInfoTag(), s, "tvshow")
         url = build_url(action="series_seasons", series_id=s.get("series_id"))
         xbmcplugin.addDirectoryItem(ADDON_HANDLE, url, li, isFolder=True)
-    xbmcplugin.addSortMethod(ADDON_HANDLE, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
+    if preserve_order:
+        xbmcplugin.addSortMethod(ADDON_HANDLE, xbmcplugin.SORT_METHOD_UNSORTED)
+    else:
+        xbmcplugin.addSortMethod(ADDON_HANDLE, xbmcplugin.SORT_METHOD_LABEL_IGNORE_THE)
     xbmcplugin.endOfDirectory(ADDON_HANDLE)
 
 
@@ -271,6 +328,10 @@ def router(paramstring):
         return
 
     if action == "movies":
+        list_hub("movies")
+        return
+
+    if action == "movies_by_category":
         client = get_client()
         if client:
             list_categories(client.vod_categories(), "movies_cat")
@@ -282,7 +343,30 @@ def router(paramstring):
             list_movies(client, client.movies_in_category(params["cat_id"]))
         return
 
+    if action == "movies_genres":
+        client = get_client()
+        if client:
+            list_genre_folders(all_genre_names(client.all_movies()), "movies_genre")
+        return
+
+    if action == "movies_genre":
+        client = get_client()
+        if client:
+            list_movies(client, items_in_genre(client.all_movies(), params["genre"]))
+        return
+
+    if action == "movies_recent":
+        client = get_client()
+        if client:
+            limit = ADDON.getSettingInt("recently_added_limit") or 60
+            list_movies(client, recently_added(client.all_movies(), limit), preserve_order=True)
+        return
+
     if action == "series":
+        list_hub("series")
+        return
+
+    if action == "series_by_category":
         client = get_client()
         if client:
             list_categories(client.series_categories(), "series_cat")
@@ -292,6 +376,25 @@ def router(paramstring):
         client = get_client()
         if client:
             list_series(client.series_in_category(params["cat_id"]))
+        return
+
+    if action == "series_genres":
+        client = get_client()
+        if client:
+            list_genre_folders(all_genre_names(client.all_series()), "series_genre")
+        return
+
+    if action == "series_genre":
+        client = get_client()
+        if client:
+            list_series(items_in_genre(client.all_series(), params["genre"]))
+        return
+
+    if action == "series_recent":
+        client = get_client()
+        if client:
+            limit = ADDON.getSettingInt("recently_added_limit") or 60
+            list_series(recently_added(client.all_series(), limit), preserve_order=True)
         return
 
     if action == "series_seasons":
