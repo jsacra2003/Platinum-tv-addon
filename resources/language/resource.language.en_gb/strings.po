@@ -1,0 +1,83 @@
+# Kodi Media Center language file
+msgid ""
+msgstr ""
+
+msgctxt "#30000"
+msgid "General"
+msgstr ""
+
+msgctxt "#30001"
+msgid "Server host"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Server port"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Username"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Password"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Use HTTPS"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Cache lifetime (hours)"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Max search results"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Movies"
+msgstr ""
+
+msgctxt "#30011"
+msgid "TV Shows"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Search"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Refresh library cache"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Search Platinum TV"
+msgstr ""
+
+msgctxt "#30015"
+msgid "No results found"
+msgstr ""
+
+msgctxt "#30016"
+msgid "Movies: %s"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Series: %s"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Refreshing library from server..."
+msgstr ""
+
+msgctxt "#30019"
+msgid "Library cache refreshed"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Set server, username and password in add-on settings first"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Season %s"
+msgstr ""

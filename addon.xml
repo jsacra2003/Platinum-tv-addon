@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<addon id="plugin.video.platinumtv" name="Platinum VOD" version="1.0.0" provider-name="jsacra2003">
+  <requires>
+    <import addon="xbmc.python" version="3.0.0"/>
+  </requires>
+  <extension point="xbmc.python.pluginsource" library="addon.py">
+    <provides>video</provides>
+  </extension>
+  <extension point="xbmc.addon.metadata">
+    <summary lang="en_GB">Browse Platinum TV movies and series properly</summary>
+    <description lang="en_GB">Talks directly to the Platinum TV Xtream Codes API to present VOD movies and TV series as a real Movies/TV Shows library with posters, plot info and search, instead of dumping every episode into the live TV guide.</description>
+    <platform>all</platform>
+    <license>MIT</license>
+    <assets>
+      <icon>icon.png</icon>
+      <fanart>fanart.jpg</fanart>
+    </assets>
+  </extension>
+</addon>
