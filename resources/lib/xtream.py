@@ -54,9 +54,15 @@ class XtreamClient(object):
 
     def stream_url(self, kind, stream_id, extension):
         # kind is "movie" or "series"
-        return "%s/%s/%s/%s/%s.%s" % (
+        url = "%s/%s/%s/%s/%s.%s" % (
             self.base_url, kind, self.username, self.password, stream_id, extension
         )
+        # The panel blocks requests that don't carry a browser-like User-Agent
+        # (returns a decoy 404 instead of the real redirect) - _fetch_json already
+        # sets this for the JSON API, but Kodi's player opens this URL directly
+        # with its own default UA, so the header has to travel with the URL itself.
+        headers = urllib.parse.urlencode({"User-Agent": "Mozilla/5.0"})
+        return "%s|%s" % (url, headers)
 
     # -- cache -----------------------------------------------------------
 
